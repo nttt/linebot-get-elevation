@@ -48,8 +48,8 @@ function handleEvent(event) {
     return Promise.resolve(null);
   }
 
-  console.log(event.source.userId);
-
+  console.log('userId:' + event.source.userId);
+  console.log('inputMsg:' + event.message.text);
 
   // create a echoing text message
   const echo = {
@@ -85,20 +85,6 @@ function noticeInfo(userId, address) {
   });
 
 }
-
-
-// function getEchoMap(lon, lat) {
-//   let res = {
-//     type: "location",
-//     title: "東京スカイツリー",
-//     address: "〒131-0045 東京都墨田区押上１丁目１−２",
-//     latitude: lat,
-//     longitude: lon
-//   }
-//   return res;
-
-// }
-
 
 function sendMessage(userId, txt) {
   client.pushMessage(userId, {
