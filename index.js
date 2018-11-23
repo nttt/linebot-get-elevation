@@ -31,19 +31,8 @@ app.post('/callback', line.middleware(config), (req, res) => {
 
 // event handler
 function handleEvent(event) {
-  let messageObj;
-  let replyToken;
-  let jsonFile;
-  let opts;
-  let req;
-  let data;
-  let replyData;
 
-  let lon = 140.08531;
-  let lat = 36.103543;
-
-
-  if (event.type !== 'message' || event.message.type !== 'text') {
+  if (event.type !== 'message') {
     // ignore non-text-message event
     return Promise.resolve(null);
   }
@@ -51,22 +40,57 @@ function handleEvent(event) {
   console.log('userId:' + event.source.userId);
   console.log('inputMsg:' + event.message.text);
 
+
+  if (event.message.type === 'text') {
+
+    excecByMsg(event);
+
+  }
+
+  if (event.message.type === 'location') {
+
+    excecByLoc(event);
+
+  }
+
+}
+
+/**
+ * メッセージを受信したときの処理
+ * @param {*} event 
+ */
+function excecByMsg(event) {
   // create a echoing text message
   const echo = {
     type: 'text',
     text: '入力された地点の標高を取得中・・・・。'
   };
 
-  noticeInfo(event.source.userId, event.message.text);
-
-  // jsonFile = require("./dialogue.json");
-  // messageObj = getMessageObj(event, jsonFile);
-  // console.log(messageObj);
+  callApis.getLocByAddress(event.message.text).then(function (value) {
+    sendLocation(event.source.userId, event.message.text, value);
+    sendMessage(event.source.userId, '指定された場所の標高は、' + value.elv + 'メートルです。\n\n(その他の情報)\n緯度：' + value.lat + '\n経度：' + value.lng + '\n測定方法：' + value.elvSrs);
+  });
 
   return client.replyMessage(event.replyToken, echo);
 
-  // use reply API
-  // return client.replyMessage(event.replyToken, messageObj);
+}
+
+/**
+ * Locationが送られてきた場合の処理
+ * @param {*} event 
+ */
+function excecByLoc(event) {
+  callApis.getEleveByLatLng(event.message.latitude, event.message.longitude).then(function (value) {
+    sendMessage(event.source.userId, '指定された場所の標高は、' + value.elv + 'メートルです。\n\n(その他の情報)\n緯度：' + value.lat + '\n経度：' + value.lng + '\n測定方法：' + value.elvSrs);
+  });
+
+  const echo = {
+    type: 'text',
+    text: '送信された地点の標高を取得中・・・・。'
+  };
+
+  return client.replyMessage(event.replyToken, echo);
+
 }
 
 // listen on port
@@ -75,16 +99,6 @@ app.listen(port, () => {
   console.log(`listening on ${port}`);
 });
 
-
-function noticeInfo(userId, address) {
-  callApis.main(address).then(function (value) {
-    // sendMessage(userId, '指定された場所の標高は、' + value.lat + 'です。\n 経度は、' + value.lng + 'です。')
-    // sendMessage(userId, '指定された場所の経度は、' + value.lng + 'です。')
-    sendLocation(userId, address, value);
-    sendMessage(userId, '指定された場所の標高は、' + value.elv + 'メートルです。\n\n(その他の情報)\n緯度：' + value.lat + '\n経度：' + value.lng + '\n測定方法：' + value.elvSrs);
-  });
-
-}
 
 function sendMessage(userId, txt) {
   client.pushMessage(userId, {
@@ -102,38 +116,3 @@ function sendLocation(userId, name, value) {
     longitude: value.lng
   });
 }
-
-
-
-
-/**
- * 入力されたデータに応じて、返すメッセージを生成する関数
- * @param {} data 入力されたデータ
- * @param {} jsonFile 外部ファイルから読み込んだJSON形式のデータ
- * @return メッセージオブジェクト
- */
-let getMessageObj = (data, jsonFile) => {
-  switch (data.type) {
-    case 'message':
-      console.log('メッセージの場合');
-      if (data.message.type != 'text') {
-        // テキストメッセージ以外の場合
-        console.log('テキスト以外のメッセージが入力された');
-        return jsonFile.otherType;
-      } else {
-        // テキストメッセージの場合、入力された文字列に応じて分岐
-        if (data.message.text == '住所') {
-          return jsonFile.dialogue2;
-        } else {
-          return jsonFile.dialogue1;
-        }
-      }
-    case 'postback':
-      console.log('postbackの場合');
-      return jsonFile[data.postback.data];
-    default:
-      console.log('それ以外の場合');
-      console.log(data);
-      return jsonFile.otherType;
-  }
-};

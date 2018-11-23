@@ -2,13 +2,23 @@ const request = require('request');
 const parser = require('xml2json');
 
 
-exports.main = function (address) {
+exports.getLocByAddress = function (address) {
     return getLatLng(address)
         .then(getAddress)
         .then(getEleve)
         .catch(function (error) {
             console.log(error);
         });
+}
+
+exports.getEleveByLatLng = function (lat, lng) {
+    var value = {
+        lat: lat,
+        lng: lng
+    }
+
+    return getEleve(value);
+
 }
 
 function getAddress(value) {
@@ -74,6 +84,7 @@ function getLatLng(address) {
 
 function getEleve(value) {
     return new Promise(function (resolve, reject) {
+        // https://maps.gsi.go.jp/development/api.html
         let options = {
             url: 'http://cyberjapandata2.gsi.go.jp/general/dem/scripts/getelevation.php?lon=' + value.lng + '&lat=' + value.lat + '&outtype=JSON',
             method: 'GET',
