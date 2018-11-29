@@ -8,6 +8,7 @@ exports.getLocByAddress = function (address) {
         .then(getEleve)
         .catch(function (error) {
             console.log(error);
+            return reject(error);
         });
 }
 
@@ -21,6 +22,10 @@ exports.getEleveByLatLng = function (lat, lng) {
 
 }
 
+/**
+ * Locationから住所を取得します。
+ * @param {*} value 
+ */
 function getAddress(value) {
     return new Promise(function (resolve, reject) {
 
@@ -41,15 +46,20 @@ function getAddress(value) {
                 console.log(body.result.prefecture.pname);
 
 
-                resolve(value);
+                return resolve(value);
             } else {
 
-                reject(error);
+                return reject(error);
             }
         })
     });
 }
 
+
+/**
+ * 指定された場所のLocationを取得します。
+ * @param {} address 
+ */
 function getLatLng(address) {
 
     return new Promise(function (resolve, reject) {
@@ -67,6 +77,12 @@ function getLatLng(address) {
                 // from json to Object
                 let res = JSON.parse(json)
 
+                if (!res.result.coordinate) {
+                    console.log('NotFound!')
+                    return reject(new Error("Not Found!"));
+
+                }
+
                 console.log(res.result.coordinate.lat);
                 console.log(res.result.coordinate.lng);
 
@@ -76,7 +92,7 @@ function getLatLng(address) {
                 });
 
             } else {
-                reject(error);
+                return reject(error);
             }
         })
     });
@@ -102,9 +118,9 @@ function getEleve(value) {
 
                 console.log(value);
 
-                resolve(value);
+                return resolve(value);
             } else {
-                reject(error);
+                return reject(error);
             }
         })
     });

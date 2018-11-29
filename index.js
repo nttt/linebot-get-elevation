@@ -40,7 +40,7 @@ function handleEvent(event) {
   console.log('userId:' + event.source.userId);
   console.log('inputMsg:' + event.message.text);
 
-// テキストを受信したときの処理
+  // テキストを受信したときの処理
   if (event.message.type === 'text') {
 
     excecByMsg(event);
@@ -67,10 +67,14 @@ function excecByMsg(event) {
     text: '入力された地点の標高を取得中・・・・。'
   };
 
-  callApis.getLocByAddress(event.message.text).then(function (value) {
-    sendLocation(event.source.userId, event.message.text, value);
-    sendMessage(event.source.userId, '指定された場所の標高は、' + value.elv + 'メートルです。\n\n(その他の情報)\n緯度：' + value.lat + '\n経度：' + value.lng + '\n測定方法：' + value.elvSrs);
-  });
+  callApis.getLocByAddress(event.message.text)
+    .then(function (value) {
+      sendLocation(event.source.userId, event.message.text, value);
+      sendMessage(event.source.userId, '指定された場所の標高は、' + value.elv + 'メートルです。\n\n(その他の情報)\n緯度：' + value.lat + '\n経度：' + value.lng + '\n測定方法：' + value.elvSrs);
+    })
+    .catch(function (error) {
+      sendMessage(event.source.userId,'入力された場所は、見つかりませんでした。');
+    });
 
   return client.replyMessage(event.replyToken, echo);
 
@@ -81,9 +85,10 @@ function excecByMsg(event) {
  * @param {*} event 
  */
 function excecByLoc(event) {
-  callApis.getEleveByLatLng(event.message.latitude, event.message.longitude).then(function (value) {
-    sendMessage(event.source.userId, '指定された場所の標高は、' + value.elv + 'メートルです。\n\n(その他の情報)\n緯度：' + value.lat + '\n経度：' + value.lng + '\n測定方法：' + value.elvSrs);
-  });
+  callApis.getEleveByLatLng(event.message.latitude, event.message.longitude)
+    .then(function (value) {
+      sendMessage(event.source.userId, '指定された場所の標高は、' + value.elv + 'メートルです。\n\n(その他の情報)\n緯度：' + value.lat + '\n経度：' + value.lng + '\n測定方法：' + value.elvSrs);
+    });
 
   const echo = {
     type: 'text',
