@@ -40,13 +40,14 @@ function handleEvent(event) {
   console.log('userId:' + event.source.userId);
   console.log('inputMsg:' + event.message.text);
 
-
+// テキストを受信したときの処理
   if (event.message.type === 'text') {
 
     excecByMsg(event);
 
   }
 
+  //Locationを受信したときの処理
   if (event.message.type === 'location') {
 
     excecByLoc(event);
