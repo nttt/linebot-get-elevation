@@ -73,6 +73,7 @@ function excecByMsg(event) {
       sendMessage(event.source.userId, '指定された場所の標高は、' + value.elv + 'メートルです。\n\n(その他の情報)\n緯度：' + value.lat + '\n経度：' + value.lng + '\n測定方法：' + value.elvSrs);
     })
     .catch(function (error) {
+      console.log(error);
       sendMessage(event.source.userId,'入力された場所は、見つかりませんでした。');
     });
 
@@ -106,6 +107,11 @@ app.listen(port, () => {
 });
 
 
+/**
+ * Send push message
+ * @param {*} userId 
+ * @param {*} txt 
+ */
 function sendMessage(userId, txt) {
   client.pushMessage(userId, {
     type: 'text',
@@ -113,6 +119,12 @@ function sendMessage(userId, txt) {
   });
 }
 
+/**
+ * Send push location
+ * @param {*} userId 
+ * @param {*} name 
+ * @param {*} value 
+ */
 function sendLocation(userId, name, value) {
   client.pushMessage(userId, {
     type: "location",

@@ -1,17 +1,21 @@
 const request = require('request');
 const parser = require('xml2json');
 
-
+/**
+ * 場所の文字列を引数に、その場所の標高を返します。
+ */
 exports.getLocByAddress = function (address) {
     return getLatLng(address)
         .then(getAddress)
         .then(getEleve)
         .catch(function (error) {
-            console.log(error);
-            return reject(error);
+            reject(error);
         });
 }
 
+/**
+ * Locationを引数に、その場所の標高を返します。
+ */
 exports.getEleveByLatLng = function (lat, lng) {
     var value = {
         lat: lat,
@@ -45,11 +49,10 @@ function getAddress(value) {
                 }
                 console.log(body.result.prefecture.pname);
 
-
-                return resolve(value);
+                resolve(value);
             } else {
 
-                return reject(error);
+                reject(error);
             }
         })
     });
@@ -64,7 +67,7 @@ function getLatLng(address) {
 
     return new Promise(function (resolve, reject) {
         let url = encodeURIComponent(address);
-
+        // https://www.geocoding.jp/api/
         let options = {
             url: 'https://www.geocoding.jp/api/?v=1.2&q=' + url,
             method: 'GET'
@@ -79,8 +82,8 @@ function getLatLng(address) {
 
                 if (!res.result.coordinate) {
                     console.log('NotFound!')
-                    return reject(new Error("Not Found!"));
-
+                    reject(new Error("Not Found!"));
+                    return;
                 }
 
                 console.log(res.result.coordinate.lat);
@@ -92,12 +95,16 @@ function getLatLng(address) {
                 });
 
             } else {
-                return reject(error);
+                reject(error);
             }
         })
     });
 }
 
+/**
+ * 指定された場所の標高を取得します。
+ * @param {*} value 
+ */
 function getEleve(value) {
     return new Promise(function (resolve, reject) {
         // https://maps.gsi.go.jp/development/api.html
@@ -118,9 +125,9 @@ function getEleve(value) {
 
                 console.log(value);
 
-                return resolve(value);
+                resolve(value);
             } else {
-                return reject(error);
+                reject(error);
             }
         })
     });
