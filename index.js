@@ -3,6 +3,7 @@
 const line = require('@line/bot-sdk');
 const express = require('express');
 const callApis = require('./callApis');
+const dac = require('./dataAccess');
 
 // create LINE SDK config from env variables
 const config = {
@@ -42,14 +43,18 @@ function handleEvent(event) {
 
   // テキストを受信したときの処理
   if (event.message.type === 'text') {
-
-    excecByMsg(event);
-
+    if (event.message.text === '入力データ') {
+      replySavedInfo(event);
+      // return client.replyMessage(event.replyToken, 'Saved data...');
+    } else {
+      dac.WriteData(event);
+      excecByMsg(event);
+    }
   }
 
   //Locationを受信したときの処理
   if (event.message.type === 'location') {
-
+    dac.WriteData(event);
     excecByLoc(event);
 
   }
@@ -74,7 +79,7 @@ function excecByMsg(event) {
     })
     .catch(function (error) {
       console.log(error);
-      sendMessage(event.source.userId,'入力された場所は、見つかりませんでした。');
+      sendMessage(event.source.userId, '入力された場所は、見つかりませんでした。');
     });
 
   return client.replyMessage(event.replyToken, echo);
@@ -99,6 +104,21 @@ function excecByLoc(event) {
   return client.replyMessage(event.replyToken, echo);
 
 }
+
+function replySavedInfo(event) {
+  dac.ReadData().then(function (value) {
+    let resultStr = '';
+
+    for (let i = 0; i < value.rows.length; i++) {
+      // console.log(value.rows[i]);
+      console.log();
+      resultStr = resultStr + JSON.stringify(value.rows[i]) + '\n';
+    }
+    sendMessage(event.source.userId, resultStr);
+  });
+
+}
+
 
 // listen on port
 const port = process.env.PORT || 80;

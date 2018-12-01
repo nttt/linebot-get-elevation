@@ -9,7 +9,7 @@ exports.getLocByAddress = function (address) {
         .then(getAddress)
         .then(getEleve)
         .catch(function (error) {
-            reject(error);
+            return Promise.reject(error);
         });
 }
 
